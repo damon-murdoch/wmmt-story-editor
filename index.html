@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+<meta content="utf-8" http-equiv="encoding">
+<html>
+  <head>
+    <title>
+      Maximum Tune Car Editor
+    </title>
+
+    <!-- Bootstrap Stylesheet -->
+    <link rel='stylesheet' href='redist/bootstrap.min.css'>
+  </head>
+  <body class='text-light bg-dark'>
+
+    <!-- Container keeping page the correct width -->
+    <div class='container' style='width: 100%; max-width: 960px;'>
+      
+      <div id='d_cover'>
+        <img src='img/cover.png' style='max-width:100%; max-height:100%; object-fit: fill;'>
+      </div>
+
+      <div id='d_header' class='text-center'>
+        <h1>
+          <!-- Wangan Midnight Maximum Tune 6 Car Editor -->
+          Maximum Tune Story Editor
+        </h1>
+        <h3>
+          For WMMT5/DX/+ and WMMT6
+        </h3>
+        <h4>
+          Supports TeknoParrot or JConfig
+        </h4>
+        <h5>
+          Tool by 
+          <a href='https://www.twitter.com/SirScrubbington'>
+            SirScrubbington
+          </a>
+        </h5>
+        <h6>
+          <i>
+            Encounter a bug? Report it
+            <a target = '_blank' href='https://www.github.com/damon-murdoch/wmmt-story-editor/issues'>
+              here
+            </a>
+          </i>
+        </h6>
+      </div>
+      <div id='d_input' class='text-center'>
+      </div>
+      <div id='d_upload'>
+        <table class='table table-dark' id='t_upload'>
+          <thead class='thead thead-dark'>
+            <tr>
+              <th colspan=5>
+                Option
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th>
+                Select File
+              </th>
+              <td>
+                <input name="file" type="file" accept=".car" id="i_file"/>
+              </td>
+              <td>
+                <a href='#' onClick='handleUpload()'>
+                  Upload File
+                </a>
+              </td>
+              <td>
+                <a href='#' onClick='handleDownload()'>
+                  Download File
+                </a>
+              </td>
+              <td>
+                <a href='#' onClick='resetPage()'>
+                  Reset Form
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                Game Selected
+              </th>
+              <td colspan=4>
+                <select id='s_game' disabled>
+                  <!-- Populated by index.js -->
+                  <option>
+                    No Game Selected
+                  </option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <!--
+          DATA FILES
+        -->
+  
+        <!-- File buffer reader source file -->
+  
+        <!-- Maximum Tune 6 Data -->
+        <script type='text/javascript' src='data/hextable.js'>
+        </script>
+  
+        <!-- Maximum Tune 6 Titles 
+          For now, I only have MaxiTune 5 titles :(
+        -->
+        <script type='text/javascript' src='data/titles.js'>
+        </script>
+  
+        <!-- Maximum Tune Specific source file -->
+        <script type='text/javascript' src='data/locations.js'>
+        </script>
+  
+        <!--
+          SOURCE FILES
+        -->
+  
+        <!-- Maximum Tune Specific source file -->
+        <script type='text/javascript' src='src/class/map.js'>
+        </script>
+  
+        <!-- File buffer reader source file -->
+
+        <!--
+        <script type='text/javascript' src='src/class/car.js'>
+        </script>
+        -->
+  
+        <!-- Main program source file -->
+        <script type='text/javascript' src='index.js'>
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
