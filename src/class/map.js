@@ -114,7 +114,7 @@ class Map
         };
     }
 
-    // verifyPoint(x: int, y: int): void
+    // verifyPoint(y: int, x: int): void
     // Given an x and a y coordinate, verify
     // the point is within the range of the map.
     verifyPoint(y, x)
@@ -125,13 +125,13 @@ class Map
             (x >= 0) && (x < this.map[0].length)
     }
 
-    // getElementAt(x: int, y: int): void
+    // getElementAt(y: int, x: int): void
     // Gets the current element at the position
     // in the map
     getElementAt(y, x)
     {
         // If the point is valid
-        if(this.verifyPoint(x,y))
+        if(this.verifyPoint(y, x))
         {
             // Return the element in the map
             return this.map[y][x];
@@ -143,12 +143,31 @@ class Map
         }
     }
 
+    // getRangeAt(y: int, x: int, n: int): void
+    // Gets the current element at the position
+    // in the map
+    getRangeAt(y, x, n)
+    {
+        // Results array
+        let results = [];
+
+        // Loop over the 'x' var
+        for(let i=x; i<x+n; i++)
+        {
+            // Add the element from the index to the row
+            results.push(this.getElementAt(y, i));
+        }
+
+        // Return the found items
+        return results;
+    }
+
     // setElementAt(y: int, x: int, n: int): int
     // Sets the element at the position in the map
     setElementAt(y, x, n)
     {
         // If the point is valid
-        if(this.verifyPoint(x,y))
+        if(this.verifyPoint(y, x))
         {
             // Set the element in the map
             this.map[y][x] = n;
@@ -157,6 +176,19 @@ class Map
         {
             // Out of range error
             throw "OutOfBoundsError";
+        }
+    }
+
+    // getRangeAt(y: int, x: int, n: int): void
+    // Gets the current element at the position
+    // in the map
+    setRangeAt(y, x, n, items)
+    {
+        // Loop over the 'x' var
+        for(let i=0; i<n; i++)
+        {
+            // Add the element from the index to the row
+            this.setElementAt(y, x + i, items[i]);
         }
     }
 

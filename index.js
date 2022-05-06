@@ -1,8 +1,28 @@
 // By default, no car is selected
-document.car = null;
+document.story = null;
 
 // No recorded file name
 document.filename = null;
+
+// Completed story bit mask
+document.story_bitmask = 0;
+
+// Locked story bit mask
+document.locked_bitmask = 0;
+
+// updateInputStatus(status: Int)
+// If status is true, disables all of
+// the input elements. If status is false,
+// enables all of the input elements.
+function updateInputStatus(status)
+{
+    // Sets the status of all elements with 'inp' in the name to 
+    // enabled / disabled (whatever status is set to)
+    document.querySelectorAll('[id^="inp-"]').forEach(input => {
+        // Disable the element
+        input.disabled = status;
+    });
+}
 
 // setValue(id: String, value: Boolean)
 // If it exists, sets the selected property for 
@@ -131,119 +151,6 @@ function setDisabled(id, value)
     }
 }
 
-// Given a combo box value, 
-// sets the tuning settings for
-// the car and enables or disables
-// the drop-downs, depending on the 
-// setting applied.
-function setTune(value)
-{
-    // Values:
-    // 0 - No Tune 
-    // 1 - Basic Tuning
-    // 2 - Full Tune 
-    // 3 - Custon Tune
-
-    // Dereference the car object
-    let car = document.car;
-
-    switch(value)
-    {
-        case 0: // Leave as is
-
-            // Disable the power/handling dropdowns
-            setDisabled('s_power', true);
-            setDisabled('s_handling', true);
-            break;
-
-        case 1: // No Tune
-
-            // Both power and handling 0 pts
-            car.setField('power', '00');
-            car.setField('handling', '00');
-
-            // Disable the power/handling dropdowns
-            setDisabled('s_power', true);
-            setDisabled('s_handling', true);
-            break;
-
-        case 2: // Basic Tuning
-
-            // Both power and handling 10 pts
-            car.setField('power', '0A');
-            car.setField('handling', '0A');
-
-            // Disable the power/handling dropdowns
-            setDisabled('s_power', true);
-            setDisabled('s_handling', true);
-            break;
-
-        case 3: // Full Tune
-
-            // Both power and handling 17 pts
-
-            // If the game is wmmt6 (840hp)
-            if(car.getGameId() == 'wmmt6')
-            {
-                // Both power and handling 16 pts 
-                car.setField('power', '11');
-                car.setField('handling', '11');
-            }
-            else // Otherwise, game is wmmt5/5dx (830hp)
-            {
-                // Both power and handling 16 pts 
-                car.setField('power', '10');
-                car.setField('handling', '10');
-            }
-
-            // Disable the power/handling dropdowns
-            setDisabled('s_power', true);
-            setDisabled('s_handling', true);
-            break;
-
-        case 4: // Custom Tune
-
-            // Enable the power/handling dropdowns
-            setDisabled('s_power', false);
-            setDisabled('s_handling', false);
-            break;
-
-        default: // Unknown value provided
-
-            console.log("Unknown value '" + value + "'provided!");
-            break;
-    }
-
-    // Update the values in the drop down
-    setSelected('o_power_' + car.getField('power'), true);
-    setSelected('o_handling_' + car.getField('handling'), true);
-}
-
-// getWikiSearch(car_id: String): String
-// Gets the search string to search for 
-// the given model of car on the wikiwiki
-// site for maximum tune.
-function getWikiSearch()
-{
-    // Start of the wmmt wikiwiki search url
-    let url_start = "https://wikiwiki.jp/wmmt/?cmd=search&word=";
-
-    // End of the wmmt wikiwiki search url
-    let url_end = "&type=AND";
-
-    // Get the name and code for the car
-    let car = document.car.getFieldName('cars');
-
-    // Remove the content after the code from the string
-    let code = car.split(']')[0];
-
-    // Remove the content before the code from the string
-    code = code.split('[')[1];
-
-    // Return the code
-    return url_start + code + url_end;
-}
-
 // handleDownload(Void): Void
 // Handle the save file download from the site
 function handleDownload()
@@ -293,11 +200,11 @@ function handleDownload()
     }
 
     // If a car has been uploaded
-    if (this.document.car !== null)
+    if (this.document.story !== null)
     {
         // Get the UINT8 array, convert to blob data and download the file
         downloadBlob(
-            this.document.car.getMap().getUINT8Array(), // Binary Values
+            this.document.story.getMap().getUINT8Array(), // Binary Values
             document.filename, // Filename of the uploaded file
             'application/octet-stream' // MIMETYPE for Binary Files
         );
@@ -329,100 +236,47 @@ function handleUpload()
 
             try
             {
-                // Null out the existing car object
-                document.car = null;
+                // Remove existing story object
+                document.story = null;
 
-                // Disable all of the select tags
-                disableAllWithTag('select');
+                // Get the map from the buffer,
+                // and create a story using the map
+                document.story = new Story(
+                    new Map(e.target.result) // Binary data of the story file
+                )
 
-                // Get the map from the buffer, and 
-                // create a new car using the map
-                let car = new Car(
-                    new Map(e.target.result)  // Binary data of the car file
-                );
-
-                // If car is created successfully, assign to the document
-                document.car = car;
-
-                // If a car is loaded
-                if (document.car)
-                {                    
-                    // Update the selected game on the form
-                    setSelected('o_' + document.car.getGameId(), true);
-
-                    // Loop over all of the supported fields
-                    document.car.getFields().forEach(field => {
-
-                        // Create the id for the drop-down select
-                        let id = 's_' + field;
-
-                        // Get the select element from the id
-                        let select = null; 
-                        
-                        try
-                        {
-                            // Get the select drop-down for the element
-                            select = document.getElementById(id);
-                        }
-                        catch // No select exists
-                        {
-                            // Must not be implemented yet, log to console
-                            console.log('Not implemented:', select);
-                        }
-
-
-                        // Ensure the select exists before continuing
-                        if (select)
-                        {
-                            // Reset the content of the select
-                            resetDropdown('s_' + field);
-
-                            // Get the drop-down with all of the possibilities
-                            let options = document.car.getOptions(field);
-
-                            // Sort the options based on the id
-                            options.sort(function(a, b){
-
-                                // Compare the value of the hex strings between the objects
-                                return Number("0x" + a.id) > Number("0x" + b.id);
-
-                            }); 
-
-                            // Populate the drop-down with all of the possibilities
-                            options.forEach(option => {
-
-                                // Create the id for the drop-down option
-                                let o_id = 'o_' + field + '_' + option.id;
-
-                                // Append an option element to the select dropdown
-                                select.appendChild(newOption(o_id, option.id, option.name));
-                            }); 
-
-                            // Set the selected option 
-                            // to the current option
-
-                            setSelected('o_' + field + '_' + document.car.getField(field), true);
-
-                            // Enable the drop-down for the select field
-                            setDisabled('s_' + field, false);
-                        }
-
-                    });
-
-                    // Set the tune to defailt
-                    setTune(0);
-                }
-                else // Car is not loaded
+                if (document.story)
                 {
-                    console.log("Failed: Car object not loaded properly!");
+                    // Update the selected game on the form
+                    setSelected('o_' + document.story.getGameId(), true);
+
+                    // Get the value of the total wins and set it to the input element
+                    document.getElementById('inp-wins').value = document.story.getWins();
+
+                    // Get the value of the current win streak and set it to the input
+                    document.getElementById('inp-streak').value = document.story.getStreak();
+
+                    // Get the value of the number of loops completed and set it to the input
+                    document.getElementById('inp-loops').value = document.story.getLoops();
+
+                    // Set the completed story bit mask to the file data
+                    document.story_bitmask = document.story.getStoryBitmask();
+
+                    // Set the locked story bit mask to the file data
+                    document.locked_bitmask = document.story.getLockedBitmask();
+
+                    // Update the checkbox values
+                    updateCheckboxes();
+
+                    // Set the story names for the current streak
+                    updateStoryNames(document.story.getLoops());
+
+                    // Enable the input menu items
+                    updateInputStatus(false);
                 }
             }
             catch(err) // Fails to create car object
             {
-                // Document car is null
-                document.car = null;
-                document.filename = null;
-
                 // Disable all of the drop-downs
 
                 // Write error to terminal
@@ -433,6 +287,277 @@ function handleUpload()
         // Read the binary content from the file
         reader.readAsArrayBuffer(file);
     }
+}
+
+// updateCheckboxes(void): Void
+// Updates the checkboxes to have
+// the values reflected by the story
+// and locked bitmask values.
+function updateCheckboxes()
+{
+    // Loop over the twenty stories
+    for(let i = 0; i < 20; i++)
+    {
+        // 'i'th bit for the bit mask
+        let bit = Math.pow(2, i);
+
+        // Current story index
+        let story = i + 1;
+
+        // Set the locked checkbox to true
+        document.getElementById('inp-' + story + '-clr').checked = (document.story_bitmask & bit);
+
+        // Set the locked checkbox to true
+        document.getElementById('inp-' + story + '-lck').checked = (document.locked_bitmask & bit);
+    }
+}
+
+// usePresetDefault(): Void
+// Clears your save file to 
+// fully stock, 0 wins, 0 streak
+// and first chapter. 
+function usePresetDefault()
+{
+    // Get the element from the document
+    let element = document.getElementById('inp-default');
+
+    // No total wins
+    updateTotalWins(0);
+
+    // No total loops
+    updateTotalLoops(0);
+
+    // No win streak
+    updateWinStreak(0);
+
+    // Clear the completed stories
+    setWonChapters(0);
+
+    // Set the locked stories to default
+    setLockedChapters(1048560);
+
+    // Uncheck the button
+    element.checked = false;
+}
+
+// usePresetFullRun(): Void
+// Sets your save file to have
+// completed one full run of
+// the game, wins and streak
+// are dependent on the game
+// in use. 
+function usePresetFullRun()
+{
+    // Get the element from the document
+    let element = document.getElementById('inp-fullrun');
+
+    // Get the id of the current game
+    let game = document.story.getGameId();
+
+    // Current game is maxi 6
+    if (game == 'wmmt6')
+    {
+        // 100 total wins
+        updateTotalWins(100);
+
+        // 5 total loops
+        updateTotalLoops(5);
+
+        // 100 win streak
+        updateWinStreak(100);
+    }
+    else if (
+        // Current game is 5/5dx+
+        game == 'wmmt5' || 
+        game == 'wmmt5dx'
+    )
+    {
+        // 60 total wins
+        updateTotalWins(60);
+
+        // 3 total loops
+        updateTotalLoops(3);
+
+        // 60 win streak
+        updateWinStreak(60);
+    }
+    else
+    {
+        console.log('unhandled gameid:', game)
+    }
+
+    // Clear the completed stories
+    setWonChapters(0);
+
+    // Set the locked stories to default
+    setLockedChapters(1048560);
+
+    // Uncheck the button
+    element.checked = false;
+}
+
+// updateStoryNames(loops: Int)
+// Given the number of completed loops, 
+// updates the story titles in the page
+// and displays the number of completed
+// chapters and stories to the screen.
+function updateStoryNames(loops)
+{
+    // Get all of the chapters for the given game
+    let chapters = document.story.table.value.chapters;
+
+    // Get the number of story runs that are finished
+    let run = Math.floor(loops / chapters.length);
+
+    // Get the current story chapter
+    let chapter = loops % chapters.length;
+
+    // Story 1 title header
+    let s1 = document.getElementById('s1-title');
+    s1.innerHTML = chapters[chapter][0];
+
+    // Story 2 title header
+    let s2 = document.getElementById('s2-title');
+    s2.innerHTML = chapters[chapter][1];
+
+    // Story 3 title header
+    let s3 = document.getElementById('s3-title');
+    s3.innerHTML = chapters[chapter][2];
+
+    // Story 4 title header
+    let s4 = document.getElementById('s4-title');
+    s4.innerHTML = chapters[chapter][3];
+
+    document.getElementById('text-loops').value = "Runs: " + run + ", Current Chapter: " + chapter;
+}
+
+function updateTotalWins(n)
+{
+    // Get the total wins element
+    let element = document.getElementById('inp-wins');
+
+    // Set the value of the element to the new value
+    element.value = n;
+
+    // Set the value of the save data to the new value
+    document.story.setWins(n);
+}
+
+function updateTotalLoops(n)
+{
+    // Get the total wins element
+    let element = document.getElementById('inp-loops');
+
+    // Set the value of the element to the new value
+    element.value = n;
+    
+    // Set the value of the save data to the new value
+    document.story.setLoops(n);
+
+    // Display the loop info on the screen
+    updateStoryNames(n)
+}
+
+function updateWinStreak(n)
+{
+    // Get the total wins element
+    let element = document.getElementById('inp-streak');
+
+    // Set the value of the element to the new value
+    element.value = n;
+    
+    // Set the value of the save data to the new value
+    document.story.setStreak(n);
+}
+
+// setWonChapters(n: Int): Void
+// Given an integer (bit mask), 
+// sets the won chapters bit mask
+// to the given bit mask and updates
+// the check boxes.
+function setWonChapters(n)
+{
+    // Set the document bitmask to the new bitmask
+    document.story_bitmask = n;
+
+    // Set the save file bitmask to the new bitmask
+    document.story.setStoryBitmask(n);
+
+    // Update the check boxes
+    updateCheckboxes();
+}
+
+// updateWonChapters(n: Int): Void
+// Given an integer, sets (or unsets) 
+// the bit corresponding to that story 
+// in the cleared chapters bit mask. 
+function updateWonChapters(n){
+
+    // Get the checkbox element
+    let cb = document.getElementById('inp-' + (n+1) + '-clr');
+
+    // Get the bit to set for the chapter
+    let bit = Math.pow(2, n);
+
+    // If the box is checked
+    if (cb.checked)
+    {
+        // Set the bit on the mask
+        document.story_bitmask = (document.story_bitmask | bit);
+    }
+    else // Box is unchecked
+    {
+        // Unset the bit on the mask
+        document.story_bitmask = (document.story_bitmask & ~(bit));
+    }
+
+    // Update the story cleared bit mask value
+    document.story.setStoryBitmask(document.story_bitmask);
+}
+
+// setLockedChapters(n: Int): Void
+// Given an integer (bit mask), 
+// sets the locked chapters bit mask
+// to the given bit mask and updates
+// the check boxes.
+function setLockedChapters(n)
+{
+    // Set the document bitmask to the new bitmask
+    document.locked_bitmask = n;
+
+    // Set the save file bitmask to the new bitmask
+    document.story.setLockedBitmask(n);
+
+    // Update the check boxes
+    updateCheckboxes();
+}
+
+// updateLockedChapters(n: Int): Void
+// Given an integer, sets (or unsets) 
+// the bit corresponding to that story 
+// in the locked chapters bit mask.
+function updateLockedChapters(n){
+
+    // Get the checkbox element
+    let cb = document.getElementById('inp-' + (n+1) + '-lck');
+
+    // Get the bit to set for the chapter
+    let bit = Math.pow(2, n);
+
+    // If the box is checked
+    if (cb.checked)
+    {
+        // Set the bit on the mask
+        document.locked_bitmask = (document.locked_bitmask | bit);
+    }
+    else // Box is unchecked
+    {
+        // Unset the bit on the mask
+        document.locked_bitmask = (document.locked_bitmask & ~(bit));
+    }
+
+    // Update the story locked bit mask value
+    document.story.setLockedBitmask(document.locked_bitmask);
 }
 
 // Initial Setup
@@ -452,21 +577,5 @@ Object.keys(HEXTABLE).forEach(id => {
     ));
 });
 
-// disableDropdowns(tag: String): void
-// Given a tag (element type), disables
-// all of the elements with that type.
-function disableAllWithTag(tag)
-{
-    // Retrieve all of the elements with the given tag
-    let elements = document.getElementsByTagName(tag);
-
-    // Loop over all of the selected elements
-    Object.keys(elements).forEach(element => {
-        
-        // Disable the selected element
-        setDisabled(elements[element].id, true);
-    });
-}
-
-// Disable all of the select tags
-disableAllWithTag('select');
+// Disable all inputs by default
+updateInputStatus(true);
