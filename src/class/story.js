@@ -50,10 +50,36 @@ class Story
         this.table = HEXTABLE[game];
     }
 
-    getBitArray(value)
+    getBitValArray(value)
+    {
+        // Convert value to hex string
+        let v = value.toString(16);
+
+        // If 'v' is uneven in length
+        if (v.length % 2 !== 0)
+        {
+            // Add a '0' to the start
+            v = '0' + v;
+        }
+
+        // Pad the end with zeros
+        v = v.padEnd(8, '0');
+
+        // Build and return the bit val array
+        return [
+            v.slice(0,2),
+            v.slice(2,4),
+            v.slice(4,6),
+            v.slice(6,8)
+        ];
+    }
+
+    getBitmaskArray(value)
     {
         // Temporary value (Should be 8 character string)
-        let v = value.toString(16).padEnd(8, 0);
+        let v = value.toString(16).padStart(6, '0').padEnd(8, '0');
+
+        console.log(v);
 
         // Build and return the bit mask array
         return  [
@@ -110,7 +136,17 @@ class Story
         return this.table.name;
     }
 
-    setWins(value){}
+    setWins(value)
+    {
+        // Get the bit array for the loops
+        let v = this.getBitValArray(value);
+
+        // Set the bit array in the map
+        this.map.setRangeAt(
+            // Splat the loops location
+            ... this.table.location.wins, v
+        )
+    }
 
     // getWins(void): Integer
     getWins()
@@ -122,7 +158,17 @@ class Story
         );
     }
 
-    setStreak(value){}
+    setStreak(value)
+    {
+        // Get the bit array for the loops
+        let v = this.getBitValArray(value);
+
+        // Set the bit array in the map
+        this.map.setRangeAt(
+            // Splat the loops location
+            ... this.table.location.streak, v
+        )
+    }
     
     getStreak()
     {
@@ -133,7 +179,17 @@ class Story
         );
     }
 
-    setLoops(value){}
+    setLoops(value)
+    {
+        // Get the bit array for the loops
+        let v = this.getBitValArray(value);
+
+        // Set the bit array in the map
+        this.map.setRangeAt(
+            // Splat the loops location
+            ... this.table.location.loops, v
+        )
+    }
 
     getLoops()
     {
@@ -147,7 +203,7 @@ class Story
     setStoryBitmask(value)
     {
         // Get the bit array for the bit mask
-        let bitmask = this.getBitArray(value);
+        let bitmask = this.getBitmaskArray(value);
 
         // Set the bit array in the map
         this.map.setRangeAt(
@@ -167,7 +223,7 @@ class Story
     setLockedBitmask(value)
     {
         // Get the bit array for the bit mask
-        let bitmask = this.getBitArray(value);
+        let bitmask = this.getBitmaskArray(value);
 
         // Set the bit array in the map
         this.map.setRangeAt(
