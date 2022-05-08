@@ -10,6 +10,10 @@ document.story_bitmask = 0;
 // Locked story bit mask
 document.locked_bitmask = 0;
 
+// First 4 chapters unlocked, 
+// all other chapters locked
+default_locked_bitmask = 1048560;
+
 // updateInputStatus(status: Int)
 // If status is true, disables all of
 // the input elements. If status is false,
@@ -334,7 +338,7 @@ function usePresetDefault()
     setWonChapters(0);
 
     // Set the locked stories to default
-    setLockedChapters(1099511627520);
+    setLockedChapters(default_locked_bitmask);
 
     // Uncheck the button
     element.checked = false;
@@ -390,7 +394,7 @@ function usePresetFullRun()
     setWonChapters(0);
 
     // Set the locked stories to default
-    setLockedChapters(1099511627520);
+    setLockedChapters(default_locked_bitmask);
 
     // Uncheck the button
     element.checked = false;
