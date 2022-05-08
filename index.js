@@ -334,7 +334,7 @@ function usePresetDefault()
     setWonChapters(0);
 
     // Set the locked stories to default
-    setLockedChapters(1048560);
+    setLockedChapters(1099511627520);
 
     // Uncheck the button
     element.checked = false;
@@ -390,7 +390,7 @@ function usePresetFullRun()
     setWonChapters(0);
 
     // Set the locked stories to default
-    setLockedChapters(1048560);
+    setLockedChapters(1099511627520);
 
     // Uncheck the button
     element.checked = false;
